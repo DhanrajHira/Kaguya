@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 from PyInquirer import prompt
 import pickle
 import os
+from urllib.parse import unquote
+import json
 from Sakurajima.api import Sakurajima
 
 class Kaguya(object):
@@ -97,9 +99,18 @@ class Kaguya(object):
 
     def get_login_details_from_user(self):
         login_details = {}
-        login_details["username"] = input("Enter your username : ")
-        login_details["userID"] = input("Enter your user ID : ")
-        login_details["authToken"] = input("Enter your auth token : ")
+        cookie_login = input("Would you like to load user details from a cookie file? [y/N]: ")
+        if cookie_login.lower() == "y":
+            cookie_file = input("Please specify the file containing your Aniwatch cookie: ")
+            with open(cookie_file, "r") as c:
+                cookie = json.loads(unquote(c.read())) # the cookie https://i.kawaii.sh/nrLE~ff.png
+            login_details["username"] = cookie["username"]
+            login_details["userID"] = cookie["userid"]
+            login_details["authToken"] = cookie["auth"]
+        else:
+            login_details["username"] = input("Enter your username : ")
+            login_details["userID"] = input("Enter your user ID : ")
+            login_details["authToken"] = input("Enter your auth token : ")
         with open(".login", "wb") as filehandle:
             pickle.dump(login_details, filehandle)
         print("Setup complete, use the download command to search and download anime")
